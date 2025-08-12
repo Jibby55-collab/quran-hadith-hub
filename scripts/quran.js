@@ -74,4 +74,57 @@ function renderList() {
     li.innerHTML = `
       <div>
         <strong>${s.number}. ${s.english}</strong>
-        <div style="font-family:'Amiri
+        <div style="font-family:'Amiri', serif; opacity:.85">${s.arabic}</div>
+      </div>
+      <button class="primary" data-num="${s.number}">Play</button>
+    `;
+    listEl.appendChild(li);
+  });
+}
+
+async function playWithFallback(reciterIdx, surahNumber, btn) {
+  const { slugs } = RECITERS[reciterIdx];
+  const originalText = btn.textContent;
+  btn.textContent = "Loading…";
+  for (const slug of slugs) {
+    for (const rate of BITRATES) {
+      const url = cdnUrl(rate, slug, surahNumber);
+      try {
+        // Some CDNs block HEAD; we still try play
+        audioEl.src = url;
+        await audioEl.play();
+        btn.textContent = "Now playing";
+        setTimeout(() => { btn.textContent = originalText; }, 1500);
+        return; // success
+      } catch (e) {
+        // try next candidate
+      }
+    }
+  }
+  alert("This reciter’s file for this surah isn’t available on the CDN at common bitrates. Try another reciter.");
+  btn.textContent = originalText;
+}
+
+/* ---------- Events ---------- */
+listEl.addEventListener("click", (e) => {
+  const btn = e.target.closest("button.primary");
+  if (!btn) return;
+  const num = Number(btn.dataset.num);
+  playWithFallback(currentReciterIndex, num, btn);
+});
+
+reciterEl.addEventListener("change", () => {
+  currentReciterIndex = Number(reciterEl.value);
+});
+
+searchEl.addEventListener("input", () => {
+  const q = searchEl.value.toLowerCase().trim();
+  filtered = surahs.filter(s =>
+    String(s.number).includes(q) ||
+    s.english.toLowerCase().includes(q) ||
+    s.arabic.includes(q)
+  );
+  renderList();
+});
+
+// EOF OK
