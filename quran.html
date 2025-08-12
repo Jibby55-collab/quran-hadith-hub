@@ -1,12 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Qur'an Player</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Qur’an Player</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Qur'an Player</h1>
-  <p>This is a placeholder for the Qur'an audio player.</p>
+  <header class="site container">
+    <a href="index.html" class="back">← Home</a>
+    <h1 class="page-title">Qur’an Player</h1>
+    <p class="tag">Pick a reciter, then choose a surah.</p>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <label>Reciter
+        <select id="reciterSelect">
+          <option>Coming soon</option>
+        </select>
+      </label>
+      <input id="search" type="search" placeholder="Search surah…" />
+    </div>
+
+    <ul id="surahList" class="list">
+      <li>
+        <div>
+          <strong>1. Al-Fātiḥah</strong>
+          <div style="font-family:'Amiri',serif;opacity:.85">الفاتحة</div>
+        </div>
+        <button class="primary">Play (demo soon)</button>
+      </li>
+    </ul>
+  </main>
+
+  <footer class="site container"><small>Qur’an &amp; Sunnah Hub</small></footer>
+  <script src="scripts/quran.js" defer></script>
 </body>
 </html>
+
