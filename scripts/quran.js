@@ -1,5 +1,4 @@
-// Minimal baseline: Mishary only + full surah list
-console.log("[QuranJS] Booting minimal");
+console.log("[QuranJS] Booting + Shuraim");
 
 const listEl    = document.getElementById("surahList");
 const searchEl  = document.getElementById("search");
@@ -9,24 +8,26 @@ audioEl.controls = true;
 audioEl.style.width = "100%";
 document.querySelector("main.container").appendChild(audioEl);
 
-// populate reciter
-const RECITERS = [{ name: "Mishary Alafasy", slug: "ar.alafasy" }];
-reciterEl.innerHTML = `<option value="0">Mishary Alafasy</option>`;
+// Known-working sources:
+const RECITERS = [
+  { key:"alafasy", name:"Mishary Alafasy", type:"islamic", slug:"ar.alafasy" },
+  { key:"shuraym", name:"Saud Al-Shuraim", type:"everyayah", folder:"AlShuraim_64kbps" }
+];
 
-// load surahs
-let surahs = [], filtered = [];
-fetch("https://api.alquran.cloud/v1/surah", { cache:"no-store" })
+// Populate dropdown
+reciterEl.innerHTML = RECITERS.map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
+reciterEl.value = "0";
+
+// Load surahs
+let surahs=[], filtered=[];
+fetch("https://api.alquran.cloud/v1/surah",{cache:"no-store"})
   .then(r=>r.json()).then(j=>{
     surahs = j.data.map(s=>({ number:s.number, english:s.englishName, arabic:s.name }));
     filtered = surahs.slice();
     render();
-    console.log("[QuranJS] Surahs loaded:", surahs.length);
+    console.log("[QuranJS] Surahs:", surahs.length);
   }).catch(()=>{
-    surahs = [
-      { number: 1, english: "Al-Fātiḥah", arabic: "الفاتحة" },
-      { number: 2, english: "Al-Baqarah", arabic: "البقرة" },
-      { number: 112, english: "Al-Ikhlāṣ", arabic: "الإخلاص" }
-    ];
+    surahs = [{number:1,english:"Al-Fātiḥah",arabic:"الفاتحة"}];
     filtered = surahs.slice();
     render();
   });
@@ -45,12 +46,20 @@ function render(){
   });
 }
 
+function pad3(n){ return String(n).padStart(3,"0"); }
+
 listEl.addEventListener("click", e=>{
   const btn = e.target.closest("button.primary");
   if(!btn) return;
   const n = Number(btn.dataset.num);
-  const url = `https://cdn.islamic.network/quran/audio-surah/128/ar.alafasy/${n}.mp3`;
-  console.log("[QuranJS] Playing:", url);
+  const r = RECITERS[Number(reciterEl.value)];
+  let url = "";
+  if(r.type==="islamic"){
+    url = `https://cdn.islamic.network/quran/audio-surah/128/${r.slug}/${n}.mp3`;
+  }else if(r.type==="everyayah"){
+    url = `https://everyayah.com/data/${r.folder}/${pad3(n)}.mp3`;
+  }
+  console.log("[QuranJS] Playing:", r.name, url);
   audioEl.src = url;
   audioEl.play().catch(()=>{});
 });
