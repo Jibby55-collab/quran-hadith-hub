@@ -1,12 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Hadith Library</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <h1>Hadith Library</h1>
-  <p>This is a placeholder for the Hadith library.</p>
+  <header class="site container">
+    <a href="index.html" class="back">← Home</a>
+    <h1 class="page-title">Hadith Library</h1>
+    <p class="tag">Browse authentic collections.</p>
+  </header>
+
+  <main class="container">
+    <div class="toolbar">
+      <label>Collection
+        <select id="collectionSelect">
+          <option>Sahih al-Bukhari</option>
+          <option>Sahih Muslim</option>
+          <option>Abu Dawood</option>
+        </select>
+      </label>
+      <input id="hadithSearch" type="search" placeholder="Search hadith…" />
+    </div>
+
+    <ul id="hadithList" class="list">
+      <li><div><strong>Demo item</strong><div style="opacity:.8">Results will appear here.</div></div></li>
+    </ul>
+  </main>
+
+  <footer class="site container"><small>Qur’an &amp; Sunnah Hub</small></footer>
+  <script src="scripts/hadith.js" defer></script>
 </body>
 </html>
