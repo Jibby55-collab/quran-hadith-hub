@@ -4,8 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Qur’an Player</title>
-
-  <!-- Fonts & (optional) styles -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
   <style>
     :root { --fg:#0b1324; --muted:#556; --accent:#1e8e3e; --bg:#f7f7fa; }
@@ -19,9 +17,8 @@
     ul.list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
     ul.list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e2e5ee;border-radius:12px;background:#fff}
     button.primary{padding:8px 12px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer}
-    button.primary:disabled{opacity:.55;cursor:not-allowed}
     #player{width:100%;margin-top:.5rem}
-    #now{margin-top:.5rem;opacity:.85}
+    #now{margin-top:.5rem;opacity:.9}
     a.back{color:var(--accent);text-decoration:none}
   </style>
 </head>
@@ -29,15 +26,15 @@
   <header class="site container">
     <a href="index.html" class="back">← Home</a>
     <h1 class="page-title">Qur’an Player</h1>
-    <p class="tag">Pick a reciter, then choose a surah.</p>
+    <p class="tag">Pick a reciter, then choose a sūrah.</p>
   </header>
 
   <main class="container">
     <div class="toolbar">
       <label>Reciter
-        <select id="reciterSelect"></select>
+        <select id="reciterSelect"><option>Loading…</option></select>
       </label>
-      <input id="search" type="search" placeholder="Search surah… (name or number)" />
+      <input id="search" type="search" placeholder="Search sūrah… (name or #)" />
     </div>
 
     <ul id="surahList" class="list"></ul>
@@ -48,7 +45,7 @@
 
   <footer class="site container"><small>Qur’an &amp; Sunnah Hub</small></footer>
 
-  <!-- IMPORTANT: keep at very bottom; bump v= when you update JS -->
-  <script src="scripts/quran.js?v=500" defer></script>
+  <!-- Keep this at the very bottom; bump v= when you update JS -->
+  <script src="scripts/quran.js?v=700" defer></script>
 </body>
 </html>
