@@ -4,8 +4,26 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Qur’an Player</title>
+
+  <!-- Fonts & (optional) styles -->
   <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  <style>
+    :root { --fg:#0b1324; --muted:#556; --accent:#1e8e3e; --bg:#f7f7fa; }
+    *{box-sizing:border-box} html,body{margin:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--fg);background:var(--bg)}
+    .container{max-width:960px;margin:0 auto;padding:16px}
+    header.site{padding-top:24px}
+    .page-title{margin:8px 0 4px}
+    .tag{color:var(--muted);margin:0 0 8px}
+    .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:8px 0 16px}
+    select,input{padding:10px 12px;font-size:14px;border:1px solid #ccd;border-radius:8px;background:#fff}
+    ul.list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+    ul.list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e2e5ee;border-radius:12px;background:#fff}
+    button.primary{padding:8px 12px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    button.primary:disabled{opacity:.55;cursor:not-allowed}
+    #player{width:100%;margin-top:.5rem}
+    #now{margin-top:.5rem;opacity:.85}
+    a.back{color:var(--accent);text-decoration:none}
+  </style>
 </head>
 <body>
   <header class="site container">
@@ -17,22 +35,20 @@
   <main class="container">
     <div class="toolbar">
       <label>Reciter
-        <select id="reciterSelect">
-          <option>Loading…</option>
-        </select>
+        <select id="reciterSelect"></select>
       </label>
-      <input id="search" type="search" placeholder="Search surah…" />
+      <input id="search" type="search" placeholder="Search surah… (name or number)" />
     </div>
 
     <ul id="surahList" class="list"></ul>
 
-    <div id="nowPlaying" style="margin-top:.75rem; font-size:.95rem; opacity:.85"></div>
-    <audio id="player" controls style="width:100%; margin-top:.5rem"></audio>
+    <div id="now"></div>
+    <audio id="player" controls></audio>
   </main>
 
   <footer class="site container"><small>Qur’an &amp; Sunnah Hub</small></footer>
 
-  <!-- Keep this at the very bottom; bump the v= when you update JS -->
-  <script src="scripts/quran.js?v=400" defer></script>
+  <!-- IMPORTANT: keep at very bottom; bump v= when you update JS -->
+  <script src="scripts/quran.js?v=500" defer></script>
 </body>
 </html>
