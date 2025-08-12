@@ -1,1 +1,1 @@
-# quran-hadith-hub
+# Qur’an & Sunnah Hub
