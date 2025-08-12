@@ -1,6 +1,14 @@
 // --- Settings ---
 const CDN_BASE = "https://cdn.islamic.network/quran/audio-surah/128";
-const RECITERS = [{ id: "ar.alafasy", name: "Mishary Alafasy" }];
+
+// Add the reciters you want here.
+// (If any track 404s, tell me — I’ll correct the slug from the official list.)
+const RECITERS = [
+  { id: "ar.alafasy",             name: "Mishary Alafasy" },        // working already
+  { id: "ar.abdurrahmaansudais",  name: "Abdur-Rahman as-Sudais" }, // Sudais
+  { id: "ar.saoodshuraym",        name: "Sa’ud ash-Shuraym" },      // Shuraim
+  { id: "ar.badralturki",         name: "Badr Al-Turki" }           // Badr Al-Turki
+];
 
 // Elements
 const listEl = document.getElementById("surahList");
@@ -62,19 +70,24 @@ function renderList(){
         <strong>${s.number}. ${s.english}</strong>
         <div style="font-family:'Amiri', serif; opacity:.85">${s.arabic}</div>
       </div>
-        <button class="primary" data-num="${s.number}">Play</button>
+      <button class="primary" data-num="${s.number}">Play</button>
     `;
     listEl.appendChild(li);
   });
 }
 
-listEl.addEventListener("click", e=>{
+listEl.addEventListener("click", async e=>{
   const btn = e.target.closest("button.primary");
   if(!btn) return;
   const num = Number(btn.dataset.num);
   const url = `${CDN_BASE}/${currentReciter}/${num}.mp3`;
-  audioEl.src = url;
-  audioEl.play().catch(()=>{});
+  try {
+    // Try to play; if the file is missing, catch and show a message
+    audioEl.src = url;
+    await audioEl.play();
+  } catch {
+    alert("This reciter’s file for this surah isn’t available at this bitrate. Try another reciter. I can also fix the reciter ID.");
+  }
 });
 
 searchEl.addEventListener("input", ()=>{
@@ -90,4 +103,3 @@ searchEl.addEventListener("input", ()=>{
 reciterEl.addEventListener("change", ()=>{
   currentReciter = reciterEl.value;
 });
-// Placeholder for Qur'an JS
