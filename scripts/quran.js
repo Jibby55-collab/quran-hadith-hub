@@ -1,11 +1,7 @@
 /* Qur'an Player — MP3Quran-first with Vercel proxy + reciter search + auto-next
-   - Loads ALL reciters from /api/mp3quran (your proxy for mp3quran.net)
-   - Each reciter has 1+ "moshaf" (style) with base `server` and `surah_list`
-   - Audio URL = `${server}${NNN}.mp3` (NNN = 001..114)
-   - Reciter search filters the dropdown live
-   - Auto-next plays the next available sūrah in the same style
-   - Remembers last reciter, style, and auto-next in localStorage
-   - Has a minimal fallback list if the API/proxy fails
+   - Loads ALL reciters from /api/mp3quran (proxy for mp3quran.net)
+   - Falls back to known-good reciters if API fails
+   - Reciter search, surah search, auto-next, saved preferences
 */
 
 const API_PROXY_EN = "/api/mp3quran?lang=en";
@@ -41,45 +37,58 @@ function debounce(fn, ms=200){ let t; return (...a)=>{ clearTimeout(t); t=setTim
 
 // state
 let allReciters       = []; // [{id,name,moshaf:[{id,name,server,surah_list}]}]
-let filteredReciters  = null; // active filter result or null
+let filteredReciters  = null;
 let currentReciter    = null;
 let currentMoshaf     = null;
 let lastPlayedSurah   = null;
 
 // persistence
 function saveState(){
-  const state = {
-    reciterName: currentReciter?.name || null,
-    moshafName:  currentMoshaf?.name  || null,
-    autoNext:    !!autoNext.checked
-  };
-  try { localStorage.setItem("qh_state", JSON.stringify(state)); } catch {}
+  const s = { reciterName: currentReciter?.name || null,
+              moshafName:  currentMoshaf?.name  || null,
+              autoNext:    !!autoNext.checked };
+  try { localStorage.setItem("qh_state", JSON.stringify(s)); } catch {}
 }
 function restoreState(){
+  try { const raw = localStorage.getItem("qh_state"); return raw ? JSON.parse(raw) : null; }
+  catch { return null; }
+}
+
+// fetch with timeout so UI never hangs
+async function fetchJson(url, timeoutMs=7000){
+  const ctrl = new AbortController();
+  const to = setTimeout(()=>ctrl.abort(), timeoutMs);
   try {
-    const raw = localStorage.getItem("qh_state");
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+    const r = await fetch(url, { cache:"no-store", signal: ctrl.signal });
+    clearTimeout(to);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch {
+    clearTimeout(to);
+    return null;
+  }
 }
 
 // boot
 init();
 async function init(){
-  // try proxy EN → AR → fallback list
-  const st0 = restoreState();
-  if (st0) autoNext.checked = !!st0.autoNext;
+  status("Loading reciters…");
+  const mem = restoreState(); if (mem) autoNext.checked = !!mem.autoNext;
 
+  // Try proxy EN → AR → fallback list
   let data = await fetchJson(API_PROXY_EN);
   if (!data?.reciters) data = await fetchJson(API_PROXY_AR);
 
   if (data?.reciters) {
     allReciters = data.reciters.filter(r => Array.isArray(r.moshaf) && r.moshaf.length);
+    status("");
   } else {
-    allReciters = FALLBACK_RECITERS;
+    allReciters = FALLBACK_RECITERS; // guaranteed mirrors
+    status("Using fallback list (API unavailable).");
   }
 
   allReciters.sort((a,b)=>a.name.localeCompare(b.name));
-  renderReciters(0); // builds dropdown + calls onChooseReciter
+  renderReciters(0);
 
   // events
   reciterEl.addEventListener("change", (e)=> onChooseReciter(Number(e.target.value)));
@@ -91,7 +100,7 @@ async function init(){
     renderReciters(0);
   }, 120));
 
-  // auto-next: when current track ends, try the next available sūrah in the same style
+  // auto-next
   player.addEventListener("ended", ()=>{
     if (!autoNext.checked || !currentMoshaf || !lastPlayedSurah) return;
     const avail = availableSetFromMoshaf(currentMoshaf);
@@ -101,14 +110,6 @@ async function init(){
       n++;
     }
   });
-}
-
-async function fetchJson(url){
-  try {
-    const r = await fetch(url, { cache:"no-store" });
-    if (!r.ok) return null;
-    return await r.json();
-  } catch { return null; }
 }
 
 /* ---------- reciter list / filtering ---------- */
@@ -123,7 +124,7 @@ function renderReciters(selectIndex=0){
 
   onChooseReciter(selectIndex);
 
-  // after first render, restore exact reciter/style if saved
+  // restore exact reciter/style if saved
   const st = restoreState();
   if (st) {
     const idx = list.findIndex(r => r.name === st.reciterName);
@@ -262,4 +263,22 @@ const FALLBACK_RECITERS = [
   },
   {
     id: 10004, name: "Yasser Al-Dossari",
-    moshaf: [{ id: 1, name: "Murattal", server: "https://server8.mp3quran.net/yasser/", surah_list:
+    moshaf: [{ id: 1, name: "Murattal", server: "https://server8.mp3quran.net/yasser/", surah_list: Array.from({length:114},(_,i)=>i+1).join(",") }]
+  },
+  {
+    id: 10005, name: "Abdul Basit Abdus Samad",
+    moshaf: [{ id: 1, name: "Murattal 64kbps", server: "https://server8.mp3quran.net/basit/", surah_list: Array.from({length:114},(_,i)=>i+1).join(",") }]
+  },
+  {
+    id: 10006, name: "Saad Al-Ghamdi",
+    moshaf: [{ id: 1, name: "Murattal", server: "https://server8.mp3quran.net/gmd/", surah_list: Array.from({length:114},(_,i)=>i+1).join(",") }]
+  },
+  {
+    id: 10007, name: "Muhammad Ayyub",
+    moshaf: [{ id: 1, name: "Murattal", server: "https://server8.mp3quran.net/ayy/", surah_list: Array.from({length:114},(_,i)=>i+1).join(",") }]
+  },
+  {
+    id: 10008, name: "Abdullah Al-Juhany",
+    moshaf: [{ id: 1, name: "Murattal (mirror)", server: "https://server11.mp3quran.net/jhn/", surah_list: Array.from({length:114},(_,i)=>i+1).join(",") }]
+  }
+];
