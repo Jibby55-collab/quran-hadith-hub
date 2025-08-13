@@ -1,166 +1,54 @@
-/* Qur'an Player — MP3Quran-first with Vercel proxy
-   - Loads ALL reciters from /api/mp3quran (proxy for mp3quran.net)
-   - Each reciter has one or more "moshaf" (style) with a base `server` and `surah_list`
-   - Audio URL = `${server}${NNN}.mp3` (NNN = 001..114)
-   - If API fails, we show a minimal fallback set with known-good servers.
-*/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Qur’an Player — MP3Quran</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:ital@0;1&family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root { --fg:#0b1324; --muted:#556; --accent:#1e8e3e; --bg:#f7f7fa; }
+    *{box-sizing:border-box} html,body{margin:0;font-family:Poppins,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--fg);background:var(--bg)}
+    .container{max-width:1000px;margin:0 auto;padding:16px}
+    header.site{padding-top:24px}
+    .page-title{margin:8px 0 4px}
+    .tag{color:var(--muted);margin:0 0 8px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:8px 0 16px}
+    select,input{padding:10px 12px;font-size:14px;border:1px solid #ccd;border-radius:8px;background:#fff}
+    .list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px}
+    .card{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border:1px solid #e2e5ee;border-radius:12px;background:#fff}
+    button.primary{padding:8px 12px;border-radius:10px;border:0;background:var(--accent);color:#fff;cursor:pointer}
+    button.primary[disabled]{opacity:.5;cursor:not-allowed}
+    #player{width:100%;margin-top:.5rem}
+    #now{margin-top:.5rem;opacity:.9;min-height:1.2em}
+    small.muted{opacity:.7}
+  </style>
+</head>
+<body>
+  <header class="site container">
+    <h1 class="page-title">Qur’an Player</h1>
+    <p class="tag">Source: MP3Quran — choose a reciter & surah.</p>
+  </header>
 
-const API_PROXY_EN = "/api/mp3quran?lang=en";
-const API_PROXY_AR = "/api/mp3quran?lang=ar";
+  <main class="container">
+    <div class="row">
+      <label>Reciter
+        <select id="reciterSelect"><option>Loading…</option></select>
+      </label>
+      <label id="moshafWrap" style="display:none">Style / Riwayah
+        <select id="moshafSelect"></select>
+      </label>
+      <input id="search" type="search" placeholder="Search sūrah… (name or #)" />
+    </div>
 
-const SURAH_NAMES = [
-  "Al-Fātiḥah","Al-Baqarah","Āl ʿImrān","An-Nisā’","Al-Mā’idah","Al-Anʿām","Al-Aʿrāf","Al-Anfāl","At-Tawbah","Yūnus","Hūd","Yūsuf","Ar-Raʿd","Ibrāhīm","Al-Ḥijr","An-Naḥl","Al-Isrā’","Al-Kahf","Maryam","Ṭā Hā","Al-Anbiyā’","Al-Ḥajj","Al-Mu’minūn","An-Nūr","Al-Furqān","Ash-Shuʿarā’","An-Naml","Al-Qaṣaṣ","Al-ʿAnkabūt","Ar-Rūm","Luqmān","As-Sajdah","Al-Aḥzāb","Saba’","Fāṭir","Yā Sīn","As-Ṣaffāt","Ṣād","Az-Zumar","Ghāfir","Fuṣṣilat","Ash-Shūrā","Az-Zukhruf","Ad-Dukhān","Al-Jāthiyah","Al-Aḥqāf","Muḥammad","Al-Fatḥ","Al-Ḥujurāt","Qāf","Adh-Dhāriyāt","Aṭ-Ṭūr","An-Najm","Al-Qamar","Ar-Raḥmān","Al-Wāqiʿah","Al-Ḥadīd","Al-Mujādilah","Al-Ḥashr","Al-Mumtaḥanah","Aṣ-Ṣaff","Al-Jumuʿah","Al-Munāfiqūn","At-Taghābun","Aṭ-Ṭalāq","At-Taḥrīm","Al-Mulk","Al-Qalam","Al-Ḥāqqah","Al-Maʿārij","Nūḥ","Al-Jinn","Al-Muzzammil","Al-Muddaththir","Al-Qiyāmah","Al-Insān","Al-Mursalāt","An-Naba’","An-Nāziʿāt","ʿAbasa","At-Takwīr","Al-Infiṭār","Al-Muṭaffifīn","Al-Inshiqāq","Al-Burūj","Aṭ-Ṭāriq","Al-Aʿlā","Al-Ghāshiyah","Al-Fajr","Al-Balad","Ash-Shams","Al-Layl","Aḍ-Ḍuḥā","Ash-Sharḥ","At-Tīn","Al-ʿAlaq","Al-Qadr","Al-Bayyinah","Az-Zalzalah","Al-ʿĀdiyāt","Al-Qāriʿah","At-Takāthur","Al-ʿAṣr","Al-Humazah","Al-Fīl","Quraysh","Al-Māʿūn","Al-Kawthar","Al-Kāfirūn","An-Naṣr","Al-Masad","Al-Ikhlāṣ","Al-Falaq","An-Nās"
-];
+    <ul id="surahList" class="list"></ul>
+    <div id="now"></div>
+    <audio id="player" controls></audio>
+    <p><small class="muted">Tip: If a track is slow, try another moshaf (style) for the same reciter.</small></p>
+  </main>
 
-// DOM
-const reciterEl = document.getElementById("reciterSelect");
-const moshafWrap = document.getElementById("moshafWrap");
-const moshafEl  = document.getElementById("moshafSelect");
-const listEl    = document.getElementById("surahList");
-const searchEl  = document.getElementById("search");
-const player    = document.getElementById("player");
-const nowEl     = document.getElementById("now");
-const pad3 = n => String(n).padStart(3,"0");
-function status(t){ nowEl.textContent = t || ""; }
+  <footer class="container"><small>Qur’an &amp; Sunnah Hub</small></footer>
 
-// State
-let allReciters = []; // [{id,name,moshaf:[{id,name,server,surah_list}]}]
-let currentReciter = null;
-let currentMoshaf  = null;
-
-// Boot
-init();
-
-async function init(){
-  // Try proxy EN → AR → fallback list
-  let data = await fetchJson(API_PROXY_EN);
-  if (!data || !data.reciters) data = await fetchJson(API_PROXY_AR);
-
-  if (data && data.reciters) {
-    allReciters = data.reciters.filter(r => Array.isArray(r.moshaf) && r.moshaf.length);
-  } else {
-    allReciters = FALLBACK_RECITERS; // guaranteed mirrors
-  }
-
-  allReciters.sort((a,b)=>a.name.localeCompare(b.name));
-  reciterEl.innerHTML = allReciters.map((r,i)=>`<option value="${i}">${r.name}</option>`).join("");
-  reciterEl.value = "0";
-  onChooseReciter(0);
-
-  reciterEl.addEventListener("change", (e)=> onChooseReciter(Number(e.target.value)));
-  moshafEl.addEventListener("change",  (e)=> onChooseMoshaf(Number(e.target.value)));
-  searchEl.addEventListener("input", onSearch);
-}
-
-async function fetchJson(url){
-  try{
-    const r = await fetch(url, { cache:"no-store" });
-    if(!r.ok) return null;
-    return await r.json();
-  }catch{ return null; }
-}
-
-function onChooseReciter(idx){
-  currentReciter = allReciters[idx];
-  if (currentReciter?.moshaf?.length){
-    moshafWrap.style.display = currentReciter.moshaf.length > 1 ? "" : "none";
-    moshafEl.innerHTML = currentReciter.moshaf.map((m,i)=>`<option value="${i}">${m.name || ("Style "+(i+1))}</option>`).join("");
-    moshafEl.value = "0";
-    onChooseMoshaf(0);
-  } else {
-    moshafWrap.style.display = "none";
-    currentMoshaf = null;
-    renderList();
-  }
-}
-
-function onChooseMoshaf(i){
-  currentMoshaf = currentReciter.moshaf[i];
-  renderList();
-}
-
-function onSearch(){
-  const q = searchEl.value.toLowerCase().trim();
-  renderList(q);
-}
-
-function availableSetFromMoshaf(m){
-  if (!m || !m.surah_list) return null;
-  const set = new Set();
-  m.surah_list.split(",").forEach(s=>{
-    const n = parseInt(s.trim(), 10);
-    if (!isNaN(n)) set.add(n);
-  });
-  return set.size ? set : null;
-}
-
-function renderList(query=""){
-  listEl.innerHTML = "";
-  const avail = availableSetFromMoshaf(currentMoshaf); // may be null → unknown list
-  const server = currentMoshaf ? currentMoshaf.server : null;
-
-  SURAH_NAMES.forEach((name, i)=>{
-    const num = i+1;
-    const show = !query || name.toLowerCase().includes(query) || String(num).includes(query);
-    if (!show) return;
-
-    const li = document.createElement("li");
-    li.className = "card";
-
-    const btn = document.createElement("button");
-    btn.className = "primary";
-    btn.textContent = "Play";
-    btn.dataset.num = String(num);
-
-    const knownMissing = avail && !avail.has(num);
-    if (!server || knownMissing){
-      btn.disabled = true;
-      btn.title = "This surah isn’t in this style for this reciter.";
-    }
-
-    btn.addEventListener("click", ()=> playFromMoshaf(currentReciter, currentMoshaf, num));
-
-    const label = document.createElement("div");
-    label.innerHTML = `<strong>${num}. ${name}</strong>`;
-
-    li.appendChild(label);
-    li.appendChild(btn);
-    listEl.appendChild(li);
-  });
-}
-
-async function playFromMoshaf(reciter, moshaf, surahNum){
-  if (!reciter || !moshaf) return;
-  const base = moshaf.server.endsWith("/") ? moshaf.server : (moshaf.server + "/");
-  const url  = `${base}${pad3(surahNum)}.mp3`;
-  status(`Trying ${reciter.name} • ${moshaf.name || "Style"} • Sūrah ${surahNum}…`);
-  const ok = await tryPlay(url);
-  if (!ok){
-    status(`Couldn’t load from this style. Try another Style (moshaf) for ${reciter.name}.`);
-  }
-}
-
-async function tryPlay(url){
-  return new Promise((resolve)=>{
-    let settled = false;
-    function done(ok){ if (settled) return; settled = true; cleanup(); resolve(ok); }
-    function cleanup(){
-      player.removeEventListener("playing", onPlay);
-      player.removeEventListener("error", onErr);
-      clearTimeout(t);
-    }
-    function onPlay(){ status(`Now playing • ${url.split("/").slice(0,4).join("/")}/…`); done(true); }
-    function onErr(){ done(false); }
-
-    player.addEventListener("playing", onPlay, { once:true });
-    player.addEventListener("error", onErr, { once:true });
-    player.src = url;
-    player.play().catch(()=>{});
-    const t = setTimeout(()=>done(false), 7000);
-  });
-}
-
-/* Fallback reciters (if API/proxy fails) — known-good servers */
-const FALLBACK_RECITERS = [
-  { id: 10001, name: "Mishary Rashid Alafasy",
-    mosh
+  <!-- Keep at the very bottom; bump v= to force refresh -->
+  <script src="scripts/quran.js?v=900" defer></script>
+</body>
+</html>
