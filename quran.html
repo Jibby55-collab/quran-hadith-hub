@@ -21,12 +21,13 @@
     #player{width:100%;margin-top:.5rem}
     #now{margin-top:.5rem;opacity:.9;min-height:1.2em}
     small.muted{opacity:.7}
+    label.switch{display:flex;align-items:center;gap:.4rem}
   </style>
 </head>
 <body>
   <header class="site container">
     <h1 class="page-title">Qur’an Player</h1>
-    <p class="tag">Source: MP3Quran — choose a reciter & surah.</p>
+    <p class="tag">Source: MP3Quran — choose a reciter, style, then a sūrah.</p>
   </header>
 
   <main class="container">
@@ -34,21 +35,33 @@
       <label>Reciter
         <select id="reciterSelect"><option>Loading…</option></select>
       </label>
+
       <label id="moshafWrap" style="display:none">Style / Riwayah
         <select id="moshafSelect"></select>
       </label>
+
+      <label>Find reciter
+        <input id="reciterSearch" type="search" placeholder="Search reciters…" />
+      </label>
+
+      <label class="switch">
+        <input id="autoNext" type="checkbox" />
+        Auto-next
+      </label>
+
       <input id="search" type="search" placeholder="Search sūrah… (name or #)" />
     </div>
 
     <ul id="surahList" class="list"></ul>
+
     <div id="now"></div>
     <audio id="player" controls></audio>
-    <p><small class="muted">Tip: If a track is slow, try another moshaf (style) for the same reciter.</small></p>
+    <p><small class="muted">Tip: If a track is slow or missing, try another Style (moshaf) for the same reciter.</small></p>
   </main>
 
   <footer class="container"><small>Qur’an &amp; Sunnah Hub</small></footer>
 
   <!-- Keep at the very bottom; bump v= to force refresh -->
-  <script src="scripts/quran.js?v=900" defer></script>
+  <script src="scripts/quran.js?v=952" defer></script>
 </body>
 </html>
